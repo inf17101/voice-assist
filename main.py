@@ -33,10 +33,17 @@ def run_assistant(audio: tuple[int, np.ndarray]):
         {"role": "user", "content": prompt}
     ],
     max_tokens=200,
+    stream=True,
     )
-    reply = completion.choices[0].message.content
-    for audio_chunk in tts_model.stream_tts_sync(reply):
-        yield audio_chunk
+
+    buffer = ""
+    for chunk in completion:
+        text_part = str(chunk.choices[0].delta.content)
+        buffer += text_part
+        if any(text_part.endswith(c) for c in (".", "!", "?")):
+            for audio_chunk in tts_model.stream_tts_sync(buffer):
+                yield audio_chunk
+            buffer = ""
 
 stream = Stream(ReplyOnPause(run_assistant), modality="audio", mode="send-receive")
 
