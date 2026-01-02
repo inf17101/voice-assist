@@ -107,10 +107,13 @@
 			const audioEl = document.getElementById('audio_output_component_id');
 
 			let connected = false;
+			let pc;
 
 			startButton.addEventListener('click', async () => {
 				status.textContent = 'Requesting microphone...';
 				try {
+					// pass any rtc_configuration params here
+					pc = new RTCPeerConnection();
 					await setupWebRTC(pc);
 					connected = true;
 					status.textContent = 'Connected';

@@ -1,5 +1,4 @@
-// pass any rtc_configuration params here
-const pc = new RTCPeerConnection();
+
 
 const audio_output_component = document.getElementById("audio_output_component_id");
                      

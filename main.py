@@ -1,12 +1,15 @@
 import logging
-from typing import Any
+from dotenv import load_dotenv
 
-from fastrtc import (ReplyOnPause, Stream, get_stt_model, get_tts_model)
+from fastrtc import (ReplyOnStopWords, Stream, get_stt_model, get_tts_model)
 from openai import OpenAI
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pathlib import Path
+from humaware_vad import HumAwareVADModel
+
+load_dotenv()
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -19,6 +22,7 @@ except Exception:
 client = OpenAI()
 stt_model = get_stt_model()
 tts_model = get_tts_model()
+vad_model = HumAwareVADModel()
 
 def run_assistant(audio: tuple[int, np.ndarray]):
     if audio:
@@ -45,7 +49,7 @@ def run_assistant(audio: tuple[int, np.ndarray]):
                 yield audio_chunk
             buffer = ""
 
-stream = Stream(ReplyOnPause(run_assistant), modality="audio", mode="send-receive")
+stream = Stream(ReplyOnStopWords(run_assistant, model=vad_model, stop_words=["Buddy"]), modality="audio", mode="send-receive")
 
 app = FastAPI()
 stream.mount(app)
