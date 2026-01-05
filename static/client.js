@@ -6,12 +6,31 @@ async function setupWebRTC(peerConnection) {
           
     // Get audio stream from webcam
     const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
+        audio: {
+            "sampleRate": 16000,
+            "channelCount": 1,
+            "echoCancellation": true,
+            "noiseSuppression": true,
+            "autoGainControl": false,
+            "facingMode": true,
+        },
     })
+
+    const audioContext = new AudioContext();
+    const gainNode = audioContext.createGain();
+
+    // Set your desired gain (1 = original volume, 3 = 3x volume, etc.)
+    gainNode.gain.value = 3.0; // 3x gain
     
+    const source = audioContext.createMediaStreamSource(stream);
+    source.connect(gainNode);
+
+    // Create a new MediaStream with the amplified audio
+    const amplifiedStream = audioContext.createMediaStreamDestination();
+    gainNode.connect(amplifiedStream);
     
     //  Send audio stream to server
-    stream.getTracks().forEach(async (track) => {
+    amplifiedStream.stream.getTracks().forEach(async (track) => {
         const sender = pc.addTrack(track, stream);
     })
     
