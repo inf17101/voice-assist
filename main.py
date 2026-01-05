@@ -49,10 +49,9 @@ homeassistant_mcp = MCPServerStreamableHttp(
     )
 
 async def run_assistant(audio: tuple[int, np.ndarray]):
-    logger.info(f"audio: {audio}")
     if audio:
         sample_rate, audio_data = audio
-        logger.info(f"Received audio chunk with sample rate: {sample_rate}, length: {audio_data.shape}")
+        logger.debug(f"Received audio chunk with sample rate: {sample_rate}, length: {audio_data.shape}")
 
     try:
         prompt = stt_model.stt(audio)
